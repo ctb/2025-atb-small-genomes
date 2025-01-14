@@ -1,0 +1,8 @@
+*.txt.??
+*.zip
+*~
+.snakemake
+.ipynb_checkpoints
+*.log.??
+*.csv
+*.tsv
