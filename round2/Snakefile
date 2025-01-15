@@ -1,0 +1,16 @@
+SAMPLES, = glob_wildcards('{sample}.sig')
+DB='../../2024-oyster-rueda/all+custom.k51.rocksdb/'
+
+rule all:
+    input:
+        expand("{sample}.k51.gather.csv", sample=SAMPLES)
+
+rule gather:
+    input:
+        "{sample}.sig",
+    output:
+        "{sample}.k51.gather.csv"
+    shell: """
+        sourmash scripts fastmultigather {input} {DB} -o {output} \
+           -k 51 -t 0 -s 10_000
+    """
