@@ -4,6 +4,10 @@ import argparse
 import pandas as pd
 import csv
 
+COLUMNS_OUT = ['query_name', 'match_name', 'containment',
+               'intersect_hashes', 'jaccard', 'max_containment',
+               'query_containment_ani', 'match_containment_ani',
+               'max_containment_ani']
 
 def main():
     p = argparse.ArgumentParser()
@@ -20,7 +24,6 @@ def main():
     all_df = pd.concat(dfs)
 
     all_df = all_df[all_df['max_containment_ani'] >= 0.9]
-    all_df = all_df[['query_name', 'containment', 'max_containment_ani', 'match_name']]
     print(len(all_df))
 
     best_matches = {}
@@ -42,10 +45,12 @@ def main():
     if args.output:
         with open(args.output, 'w', newline='') as outfp:
             w = csv.writer(outfp)
-            w.writerow(['query_name', 'containment', 'max_containment_ani', 'match_name'])
+            w.writerow(COLUMNS_OUT)
             for k, v in sorted(best_matches.items(), key=lambda x: -x[1].containment):
-                w.writerow([v.query_name, v.containment, v.max_containment_ani, v.match_name])
-        
+                row_out = []
+                for column_name in COLUMNS_OUT:
+                    row_out.append(getattr(v, column_name))
+                w.writerow(row_out)
 
 
 if __name__ == '__main__':
