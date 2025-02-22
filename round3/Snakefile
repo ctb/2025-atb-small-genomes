@@ -1,0 +1,40 @@
+SPLIT_MF, = glob_wildcards('subsets.mf/mf-rows.{split}.mf.csv')
+
+print(f'loaded {len(SPLIT_MF)} subsets')
+
+DB = '/group/ctbrowngrp5/sourmash-db/entire-2025-01-21/entire-2025-01-21.k51.rocksdb/'
+
+rule all:
+    input:
+        expand('subsets.gather/gather.{split}.csv', split=SPLIT_MF),
+        expand('subsets.gather/gather.{split}.with-lineages.csv', split=SPLIT_MF),
+
+rule do_annotate:
+    input:
+        expand('subsets.gather/gather.{split}.with-lineages.csv', split=SPLIT_MF),
+
+rule do_gather:
+    input:
+        expand('subsets.gather/gather.{split}.csv', split=SPLIT_MF),
+
+rule gather:
+    input:
+        q='subsets.mf/mf-rows.{split}.mf.csv',
+        db=DB,
+    output:
+        'subsets.gather/gather.{split}.csv',
+    benchmark:
+        'subsets.benchmarks/bench.{split}.csv'
+    shell: """
+        sourmash scripts fastmultigather -k 51 -s 10_000 {input.q} {input.db} \
+           -o {output}
+    """
+
+rule annotate:
+    input:
+        'subsets.gather/gather.{split}.csv',
+    output:
+        'subsets.gather/gather.{split}.with-lineages.csv',
+    shell: """
+        sourmash tax annotate -g {input} -t /group/ctbrowngrp5/sourmash-db/entire-2025-01-21/entire-2025-01-21.lineages.sqldb --output-dir subsets.gather
+    """
