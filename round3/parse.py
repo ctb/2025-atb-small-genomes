@@ -27,7 +27,7 @@ def load_gather_lineages(csv_path, *, rank="class"):
         if val is None:
             return "UNASSIGNED"
 
-        return ";".join(val.split(';')[:lin_idx])
+        return ";".join(val.split(';')[:lin_idx+1])
 
     df = df.with_columns([
         pl.struct(["lineage"])
