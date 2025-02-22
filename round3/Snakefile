@@ -9,6 +9,12 @@ rule all:
         expand('subsets.gather/gather.{split}.csv', split=SPLIT_MF),
         expand('subsets.gather/gather.{split}.with-lineages.csv', split=SPLIT_MF),
 
+rule parse:
+    input:
+        expand('full-parse-{rank}.txt', rank=['species', 'genus', 'family',
+                                              'class', 'order', 'kingdom',
+                                              'phylum'])
+
 rule do_annotate:
     input:
         expand('subsets.gather/gather.{split}.with-lineages.csv', split=SPLIT_MF),
@@ -37,4 +43,13 @@ rule annotate:
         'subsets.gather/gather.{split}.with-lineages.csv',
     shell: """
         sourmash tax annotate -g {input} -t /group/ctbrowngrp5/sourmash-db/entire-2025-01-21/entire-2025-01-21.lineages.sqldb --output-dir subsets.gather
+    """
+
+rule parse_wc:
+    input:
+        "parse.py"
+    output:
+        "full-parse-{rank}.txt"
+    shell: """
+       /usr/bin/time -v ./parse.py subsets.gather/*.with-lineages.csv -r {wildcards.rank} > full-parse-{wildcards.rank}.txt
     """
